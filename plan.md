@@ -11,7 +11,7 @@ Recommend a modular TypeScript API using NestJS, PostgreSQL, and Prisma. Use Pos
 - **TypeScript + NestJS:** Type safety and a conventional module/guard structure suit an assignment with several resource types and role checks. Fastify with TypeScript would be a lighter alternative, but requires more application structure to be assembled by hand.
 - **PostgreSQL + Prisma:** Relational constraints fit the user/group/board/task relationships, and transactions support atomic membership and idempotency operations. Prisma provides typed queries and migrations; raw SQL remains available for constraints or queries that need it.
 - **Authentication:** Password sign-in with Argon2 password hashing and opaque server-side sessions in PostgreSQL, delivered as `HttpOnly`, `Secure`, `SameSite` cookies. This supports explicit sign-out and session revocation without introducing a separate token-refresh system. Add CSRF protection for cookie-authenticated state-changing requests.
-- **Testing and API contract:** Jest with HTTP-level integration tests against PostgreSQL; OpenAPI documentation generated from DTOs and route metadata.
+- **Testing and API contract:** Vitest with HTTP-level integration tests against PostgreSQL; OpenAPI documentation generated from DTOs and route metadata. The current NestJS starter uses Vitest as its test runner.
 - **Operational basics:** Environment-based configuration, structured logs, migration/seeding scripts, and health checks. Keep deployment/containerization optional unless required by the assignment rubric.
 
 ## Core data and authorization model
