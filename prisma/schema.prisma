@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  DENIED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique
+  passwordHash       String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdGroups      Group[]             @relation("GroupCreator")
+  memberships        GroupMembership[]   @relation("UserMemberships")
+  decidedMemberships GroupMembership[]   @relation("MembershipDecider")
+  createdTasks       Task[]              @relation("TaskCreator")
+  idempotencyRecords IdempotencyRecord[]
+}
+
+model Group {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  createdById String            @db.Uuid
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  createdBy   User              @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  memberships GroupMembership[]
+  boards      Board[]
+
+  @@index([createdById])
+}
+
+model GroupMembership {
+  id           String           @id @default(uuid()) @db.Uuid
+  groupId      String           @db.Uuid
+  userId       String           @db.Uuid
+  status       MembershipStatus @default(PENDING)
+  decidedById  String?          @db.Uuid
+  requestedAt DateTime         @default(now())
+  decidedAt   DateTime?
+  group        Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user         User             @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy    User?            @relation("MembershipDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@unique([groupId, userId])
+  @@index([groupId, status, requestedAt])
+}
+
+model Board {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  groupId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([groupId])
+}
+
+model Task {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  boardId     String     @db.Uuid
+  createdById String     @db.Uuid
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  board       Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdBy   User       @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([boardId, status])
+  @@index([createdById])
+}
+
+model IdempotencyRecord {
+  id             String    @id @default(uuid()) @db.Uuid
+  key            String
+  userId         String    @db.Uuid
+  requestHash    String
+  responseStatus Int?
+  responseBody   Json?
+  resourceId     String?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  expiresAt      DateTime
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([expiresAt])
+}
