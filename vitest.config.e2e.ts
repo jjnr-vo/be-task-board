@@ -6,5 +6,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    setupFiles: ['./test/e2e-setup.ts'],
+    fileParallelism: false,
   },
 });

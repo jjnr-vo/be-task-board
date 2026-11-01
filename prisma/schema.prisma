@@ -45,16 +45,16 @@ model Group {
 }
 
 model GroupMembership {
-  id           String           @id @default(uuid()) @db.Uuid
-  groupId      String           @db.Uuid
-  userId       String           @db.Uuid
-  status       MembershipStatus @default(PENDING)
-  decidedById  String?          @db.Uuid
+  id          String           @id @default(uuid()) @db.Uuid
+  groupId     String           @db.Uuid
+  userId      String           @db.Uuid
+  status      MembershipStatus @default(PENDING)
+  decidedById String?          @db.Uuid
   requestedAt DateTime         @default(now())
   decidedAt   DateTime?
-  group        Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user         User             @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
-  decidedBy    User?            @relation("MembershipDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  group       Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User             @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy   User?            @relation("MembershipDecider", fields: [decidedById], references: [id], onDelete: SetNull)
 
   @@unique([groupId, userId])
   @@index([groupId, status, requestedAt])
